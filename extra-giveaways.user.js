@@ -19,10 +19,7 @@
         // Check if button already exists to avoid duplicates
         let existingButton = document.getElementById('giveaway-auto-enter-btn');
         if (existingButton) {
-            // Re-attach event listener if button exists
-            existingButton.removeEventListener('click', autoEnterGiveaways);
-            existingButton.addEventListener('click', autoEnterGiveaways);
-            return;
+            return; // Button already exists, don't recreate
         }
 
         // Find the navigation container on the right side of the page
@@ -30,18 +27,53 @@
         const navRightContainer = document.querySelector('.nav_top_inner-wrap-right') || 
                                   document.querySelector('.nav_top-content > div:last-child');
         
-        // If navigation container not found, retry after a delay
-        // This handles cases where the page is still loading
-        if (!navRightContainer) {
-            setTimeout(createButton, 1000);
+        // If navigation container found, create button immediately
+        if (navRightContainer) {
+            createButtonElement(navRightContainer);
             return;
         }
 
+        // If navigation container not found, keep checking until it appears
+        // This ensures the button is added as soon as the container element is available
+        const checkInterval = setInterval(() => {
+            const container = document.querySelector('.nav_top_inner-wrap-right') || 
+                             document.querySelector('.nav_top-content > div:last-child');
+            
+            if (container) {
+                clearInterval(checkInterval); // Stop checking
+                createButtonElement(container);
+            }
+        }, 100); // Check every 100ms for better responsiveness
+        
+        // Add a timeout to prevent infinite checking (10 seconds max)
+        setTimeout(() => {
+            clearInterval(checkInterval);
+            // If still no container found after timeout, create fallback button
+            if (!document.getElementById('giveaway-auto-enter-btn')) {
+                const fallbackContainer = document.createElement('div');
+                fallbackContainer.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    z-index: 10000;
+                `;
+                document.body.appendChild(fallbackContainer);
+                createButtonElement(fallbackContainer);
+            }
+        }, 10000);
+    }
+
+    /**
+     * Creates the actual button element and adds it to the specified container
+     * @param {Element} container - The container to add the button to
+     */
+    function createButtonElement(container) {
         // Create the auto-enter button element
         const button = document.createElement('button');
         button.id = 'giveaway-auto-enter-btn';
         button.className = 'themeButton primaryLinkButton';
         button.title = 'Enter All Giveaways';
+        button.disabled = true; // Initially disabled until DOM is ready
         
         // Apply custom styling to match the site's design
         button.style.cssText = `
@@ -50,31 +82,47 @@
             background: transparent;
             padding: 12px 16px;
             border-radius: 4px;
-            cursor: pointer;
+            cursor: not-allowed;
             font-size: 18px;
             margin-right: 10px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            opacity: 0.6;
         `;
         
         // Add gift icon to the button
         button.innerHTML = '<i class="fal fa-gift" style="font-size: 2.8rem;"></i>';
         
-        // Add hover effects for better user experience
+        // Add hover effects for better user experience (only when enabled)
         button.addEventListener('mouseenter', () => {
-            button.style.opacity = '0.8';
+            if (!button.disabled) {
+                button.style.opacity = '0.8';
+            }
         });
         
         button.addEventListener('mouseleave', () => {
-            button.style.opacity = '1';
+            if (!button.disabled) {
+                button.style.opacity = '1';
+            }
         });
         
-        // Attach click handler to trigger the giveaway automation
-        button.addEventListener('click', autoEnterGiveaways);
+        // Insert button at the beginning of the container
+        container.insertBefore(button, container.firstChild);
         
-        // Insert button at the beginning of the navigation container
-        navRightContainer.insertBefore(button, navRightContainer.firstChild);
+        // Check if button should be enabled immediately
+        checkAndEnableButton();
+    }
+
+    /**
+     * Checks if the button should be enabled and enables it if conditions are met
+     * This ensures buttons are enabled regardless of when they're created
+     */
+    function checkAndEnableButton() {
+        const button = document.getElementById('giveaway-auto-enter-btn');
+        if (button && document.readyState !== 'loading') {
+            enableGiveawayAutomation();
+        }
     }
 
     /**
@@ -335,12 +383,37 @@
         processGiveaways();
     }
 
-    // Initialize the button when the page is ready
-    // Handle both cases: page still loading vs already loaded
+    // Initialize the button immediately for better user experience
+    // The button will be visible early, but giveaway automation will wait for DOM to be ready
+    createButton();
+
+    // Wait for DOM content to be fully loaded before allowing giveaway automation to start
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', createButton);
+        document.addEventListener('DOMContentLoaded', () => {
+            // Enable the button functionality once DOM is ready
+            enableGiveawayAutomation();
+        });
     } else {
-        createButton();
+        // DOM is already loaded, enable immediately
+        enableGiveawayAutomation();
+    }
+
+    /**
+     * Enables the giveaway automation functionality once the DOM is ready
+     * This ensures all necessary elements are available before processing begins
+     */
+    function enableGiveawayAutomation() {
+        const button = document.getElementById('giveaway-auto-enter-btn');
+        if (button) {
+            // Remove any existing listeners and add the main one
+            button.removeEventListener('click', autoEnterGiveaways);
+            button.addEventListener('click', autoEnterGiveaways);
+            
+            // Enable the button (remove any disabled state)
+            button.disabled = false;
+            button.style.opacity = '1';
+            button.style.cursor = 'pointer';
+        }
     }
 
 })();
