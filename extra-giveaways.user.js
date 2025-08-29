@@ -248,7 +248,7 @@
                     giveaway.click();
                     
                     // Wait for the overlay to load and the enter button to appear
-                    const enterButton = await waitForElement('div.giveaway-enter-form button[type="button"]');
+                    const enterButton = await waitForElement('div.giveaway-enter-form button[type="submit"]');
                     
                     await new Promise(r => setTimeout(r, 100));
                     
