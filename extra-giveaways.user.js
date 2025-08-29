@@ -11,27 +11,39 @@
 (function() {
     'use strict';
 
-    // Create the button in the upper right corner
+    /**
+     * Creates and injects the auto-enter button into the navigation bar
+     * This function handles the UI setup for the giveaway automation tool
+     */
     function createButton() {
+        // Check if button already exists to avoid duplicates
         let existingButton = document.getElementById('giveaway-auto-enter-btn');
         if (existingButton) {
+            // Re-attach event listener if button exists
             existingButton.removeEventListener('click', autoEnterGiveaways);
             existingButton.addEventListener('click', autoEnterGiveaways);
             return;
         }
 
+        // Find the navigation container on the right side of the page
+        // Try multiple selectors for compatibility across different page layouts
         const navRightContainer = document.querySelector('.nav_top_inner-wrap-right') || 
                                   document.querySelector('.nav_top-content > div:last-child');
         
+        // If navigation container not found, retry after a delay
+        // This handles cases where the page is still loading
         if (!navRightContainer) {
             setTimeout(createButton, 1000);
             return;
         }
 
+        // Create the auto-enter button element
         const button = document.createElement('button');
         button.id = 'giveaway-auto-enter-btn';
         button.className = 'themeButton primaryLinkButton';
         button.title = 'Enter All Giveaways';
+        
+        // Apply custom styling to match the site's design
         button.style.cssText = `
             color: rgb(34, 51, 68);
             border: none;
@@ -46,9 +58,10 @@
             justify-content: center;
         `;
         
+        // Add gift icon to the button
         button.innerHTML = '<i class="fal fa-gift" style="font-size: 2.8rem;"></i>';
         
-        // Add hover effects
+        // Add hover effects for better user experience
         button.addEventListener('mouseenter', () => {
             button.style.opacity = '0.8';
         });
@@ -57,18 +70,28 @@
             button.style.opacity = '1';
         });
         
-        // Add click handler
+        // Attach click handler to trigger the giveaway automation
         button.addEventListener('click', autoEnterGiveaways);
         
+        // Insert button at the beginning of the navigation container
         navRightContainer.insertBefore(button, navRightContainer.firstChild);
     }
 
+    /**
+     * Main function that automates entering all eligible giveaways
+     * This is the core functionality that processes giveaways one by one
+     */
     function autoEnterGiveaways() {
-        // Create toast notification system
+        /**
+         * Creates a toast notification system for user feedback
+         * Shows success, info, and error messages during the automation process
+         * @returns {Object} Toast system with show method
+         */
         function createToastSystem() {
-            // Create container for toasts if it doesn't exist
+            // Check if toast container already exists
             let toastContainer = document.getElementById('giveaway-extension-toasts');
             if (!toastContainer) {
+                // Create toast container for notifications
                 toastContainer = document.createElement('div');
                 toastContainer.id = 'giveaway-extension-toasts';
                 toastContainer.style.cssText = `
@@ -84,7 +107,7 @@
                 document.body.appendChild(toastContainer);
             }
             
-            // Add styles for toasts
+            // Add CSS styles for toast notifications
             const style = document.createElement('style');
             style.textContent = `
                 .giveaway-toast {
@@ -116,20 +139,19 @@
             `;
             document.head.appendChild(style);
             
+            // Return toast system with show method
             return {
                 show: function(message, type = 'info', duration = 3000) {
-                    // Create toast element
                     const toast = document.createElement('div');
                     toast.className = `giveaway-toast ${type}`;
                     toast.textContent = message;
                     
-                    // Add to container
                     toastContainer.appendChild(toast);
                     
-                    // Trigger animation
+                    // Animate toast in
                     setTimeout(() => toast.classList.add('show'), 10);
                     
-                    // Remove after duration
+                    // Auto-remove toast after duration
                     setTimeout(() => {
                         toast.classList.remove('show');
                         setTimeout(() => toastContainer.removeChild(toast), 300);
@@ -139,7 +161,13 @@
             };
         }
         
-        // Function to wait for an element to appear
+        /**
+         * Waits for an element to appear in the DOM
+         * Uses MutationObserver for efficient element detection
+         * @param {string} selector - CSS selector for the target element
+         * @param {number} timeout - Maximum time to wait in milliseconds
+         * @returns {Promise<Element>} Promise that resolves with the found element
+         */
         function waitForElement(selector, timeout = 10000) {
             return new Promise((resolve, reject) => {
                 // Check if element already exists
@@ -148,7 +176,7 @@
                     return resolve(element);
                 }
                 
-                // Set up mutation observer to watch for the element
+                // Set up observer to watch for DOM changes
                 const observer = new MutationObserver((mutations, obs) => {
                     const element = document.querySelector(selector);
                     if (element) {
@@ -157,14 +185,14 @@
                     }
                 });
                 
-                // Start observing
+                // Start observing DOM changes
                 observer.observe(document.body, {
                     childList: true,
                     subtree: true,
                     attributes: true
                 });
                 
-                // Set timeout as a fallback
+                // Set timeout to prevent infinite waiting
                 setTimeout(() => {
                     observer.disconnect();
                     reject(new Error(`Timeout waiting for ${selector}`));
@@ -172,26 +200,32 @@
             });
         }
         
-        // Function to wait for page transitions
+        /**
+         * Waits for the page to fully load
+         * @returns {Promise} Promise that resolves when page is loaded
+         */
         function waitForPageLoad() {
             return new Promise(resolve => {
-                // If document is already complete, resolve immediately
                 if (document.readyState === 'complete') {
                     return resolve();
                 }
                 
-                // Otherwise wait for load event
                 window.addEventListener('load', resolve, { once: true });
             });
         }
         
-        // Function to wait for DOM to stabilize (no changes for a period)
+        /**
+         * Waits for the DOM to become stable (no more rapid changes)
+         * This prevents issues with elements being modified while we're trying to interact with them
+         * @param {number} timeoutMs - Time to wait for stability in milliseconds
+         * @returns {Promise} Promise that resolves when DOM is stable
+         */
         function waitForDomStable(timeoutMs = 100) {
             return new Promise(resolve => {
                 let timeout;
                 
+                // Watch for DOM mutations and reset timer
                 const observer = new MutationObserver(() => {
-                    // Reset the timeout on each mutation
                     clearTimeout(timeout);
                     timeout = setTimeout(() => {
                         observer.disconnect();
@@ -199,14 +233,14 @@
                     }, timeoutMs);
                 });
                 
-                // Start observing
+                // Start observing DOM changes
                 observer.observe(document.body, {
                     childList: true,
                     subtree: true,
                     attributes: true
                 });
                 
-                // Initial timeout in case there are no mutations
+                // Fallback timeout if no mutations occur
                 timeout = setTimeout(() => {
                     observer.disconnect();
                     resolve();
@@ -214,23 +248,28 @@
             });
         }
         
-        // Process all eligible giveaways
+        /**
+         * Main processing loop that enters giveaways one by one
+         * Handles the entire workflow from finding eligible giveaways to completing entries
+         */
         async function processGiveaways() {
-            // Initialize toast system
             const toast = createToastSystem();
 
+            // Show initial status message
             toast.show('Starting...', 'info', 2000);
             
             let continueProcessing = true;
             
+            // Main processing loop
             while (continueProcessing) {
-                // Wait for the page to be fully loaded
+                // Wait for page to be ready before processing
                 await waitForPageLoad();
                 await waitForDomStable();
                 
-                // Find all eligible giveaways (refresh the list each time)
+                // Find all eligible giveaways (those that can be entered)
                 const eligibleGiveaways = document.querySelectorAll('button.giveaway-tile.eligible');
                 
+                // If no eligible giveaways found, we're done
                 if (eligibleGiveaways.length === 0) {
                     toast.show('All giveaways have been entered!', 'success', 5000);
                     continueProcessing = false;
@@ -238,37 +277,40 @@
                 }
                 
                 try {
-                    // Always process the first eligible giveaway in the list
+                    // Process the first eligible giveaway
                     const giveaway = eligibleGiveaways[0];
                     
+                    // Extract giveaway name for user feedback
                     const nameElement = giveaway.querySelector('.giveaway-tile_name');
                     const giveawayName = nameElement?.textContent?.trim() || "giveaway";
                     
-                    // Click the giveaway tile to open it
+                    // Click on the giveaway to open it
                     giveaway.click();
                     
-                    // Wait for the overlay to load and the enter button to appear
+                    // Wait for and click the enter button
                     const enterButton = await waitForElement('div.giveaway-enter-form button[type="submit"]');
                     
+                    // Small delay to ensure form is ready
                     await new Promise(r => setTimeout(r, 100));
                     
                     enterButton.click();
                     toast.show(`Successfully entered ${giveawayName}!`, 'success');
                     
-                    
-                    // Wait for any confirmation or changes
+                    // Wait for DOM to stabilize after entry
                     await waitForDomStable();
                     
-                    // Go back to the giveaways page
+                    // Find and click back button to return to giveaway list
                     const backButton = await waitForElement('div.giveaway-overlay_header button');
                     backButton.click();
                     
-                    // Wait for the main page to reload
+                    // Wait for page to stabilize before continuing
                     await waitForDomStable();
                     
                 } catch (error) {
+                    // Handle errors during giveaway processing
                     toast.show(`Error: ${error.message}`, 'error', 5000);
                     
+                    // Try to recover by clicking back button if possible
                     try {
                         const backButton = document.querySelector('div.giveaway-overlay_header button');
                         if (backButton) backButton.click();
@@ -277,6 +319,7 @@
                         toast.show("Couldn't find back button, trying to continue...", 'info');
                     }
                     
+                    // Implement retry logic (one retry)
                     if (continueProcessing === true) {
                         continueProcessing = "last_try";
                         toast.show("Encountered an error, will try once more", 'info');
@@ -288,11 +331,12 @@
             }
         }
         
-        // Start the process
+        // Start the giveaway processing
         processGiveaways();
     }
 
-    // Wait for the page to load before creating the button
+    // Initialize the button when the page is ready
+    // Handle both cases: page still loading vs already loaded
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', createButton);
     } else {
