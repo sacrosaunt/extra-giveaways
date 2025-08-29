@@ -9,6 +9,12 @@ A Tampermonkey userscript that automatically enters all giveaways on [extrasfora
 - **Real-time Feedback**: Toast notifications show progress and results
 - **Non-intrusive**: Integrates seamlessly (and inconspicuously) with the existing site design
 
+<p align="center">
+  <img src="image.jpg" alt="Inconspicuous!" width="400" />
+  <br/>
+  <em>Inconspicuous!</em>
+</p>
+
 ## Installation
 
 ### Option 1: Easy Installation via Greasy Fork (Recommended)
