@@ -1,6 +1,6 @@
 # Giveaway Auto Enter
 
-A Tampermonkey userscript that automatically enters all giveaways on extrasforamazon.com.
+A Tampermonkey userscript that automatically enters all giveaways on [extrasforamazon.com](extrasforamazon.com).
 
 ## Features
 
