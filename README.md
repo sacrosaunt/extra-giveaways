@@ -18,23 +18,17 @@ A Tampermonkey userscript that automatically enters all giveaways on [extrasfora
 ## Installation
 
 ### Option 1: Easy Installation via Greasy Fork (Recommended)
-1. Click the [Install button on Greasy Fork](https://greasyfork.org/en/scripts/547667-giveaway-auto-enter)
-2. Your userscript manager will automatically install the script
-3. That's it! The script will work immediately on extrasforamazon.com
+Click this button:
+
+[![Install](https://img.shields.io/badge/Install-Greasy%20Fork-brightgreen)](https://greasyfork.org/en/scripts/547667-giveaway-auto-enter)
 
 ### Option 2: Manual Installation
-**Prerequisites:**
-You need a userscript manager browser extension:
-- [Tampermonkey](https://www.tampermonkey.net/) (Chrome, Firefox, Safari, Edge)
-- [Greasemonkey](https://www.greasespot.net/) (Firefox)
-- [Violentmonkey](https://violentmonkey.github.io/) (Chrome, Firefox, Edge)
 
-**Install the Script:**
-1. Install a userscript manager (Tampermonkey recommended)
-2. Click on the userscript manager icon in your browser
-3. Select "Create a new script" or "Add new script"
-4. Copy and paste the contents of `extra-giveaways.user.js` into the editor
-5. Save the script (Ctrl+S or Cmd+S)
+**Steps:**
+1. Install a userscript manager like [Tampermonkey](https://www.tampermonkey.net/), [Greasemonkey](https://www.greasespot.net/), or [Violentmonkey](https://violentmonkey.github.io/)
+2. Create a new script
+3. Copy and paste the contents of `extra-giveaways.user.js`
+4. Save the script
 
 ## Usage
 
@@ -43,15 +37,6 @@ You need a userscript manager browser extension:
 3. Click the gift icon to start automatically entering all eligible giveaways
 4. Watch the toast notifications for progress updates
 5. The script will stop when all giveaways have been entered
-
-## Technical Details
-
-- **Target Site**: `https://extrasforamazon.com/app/giveaways*`
-- **Permissions**: No special permissions required (`@grant none`)
-- **Execution**: Runs after page load (`@run-at document-end`)
-- **DOM Manipulation**: Uses mutation observers for reliable element detection
-- **Error Recovery**: Implements retry logic and graceful error handling
-- **UI Integration**: Matches the site's existing button styling and layout
 
 ## License
 
