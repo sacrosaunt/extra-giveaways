@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Giveaway Auto Enter
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  Automatically enter giveaways on extrasforamazon.com
 // @author       sacrosaunt
 // @match        https://extrasforamazon.com/app/giveaways*
